@@ -11,7 +11,7 @@ Show configuration
 ![Features](https://github.com/joaompinto/kubecfg/raw/main/imgs/features.png)
 
 Test connectivity
-![Features](https://github.com/joaompinto/kubecfg/raw/main/imgs/ping.png)
+![Ping](https://github.com/joaompinto/kubecfg/raw/main/imgs/ping.png)
 
 # Install
 ```sh
@@ -21,4 +21,20 @@ pip install kubecfg
 # Run
 ```sh
 kubecfg
+```
+
+# Use the library
+This example shows how to use the [HTTPX](https://www.python-httpx.org/) to obtain the version of the API server.
+
+```python
+import httpx
+from kubecfg.config import KubeConfig
+
+k8s_config = KubeConfig()
+k8s_config.load_config()
+
+server, cert, client_ca = k8s_config.get_auth_data()
+r = httpx.get(f"{server}/version", cert=cert, verify=client_ca)
+r.raise_for_status()
+print(r.text)
 ```
