@@ -13,3 +13,8 @@ Python library and cli utility to check k8s client configurations
 ```sh
 pip install kubecfg
 ```
+
+# Run
+```sh
+kubecfg
+```
