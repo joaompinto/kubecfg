@@ -1,14 +1,15 @@
-from .config import KubeConfig
+import typer
+from .cli import main, show, ping
 
 
-def main():
-    kubeconfig = KubeConfig()
-    kubeconfig.load_config()
-    kubeconfig.show_clusters()
-    kubeconfig.show_contexts()
-    kubeconfig.show_users()
-    kubeconfig.show_current()
+def app_main():
+    app = typer.Typer(short_help="Cool")
+
+    app.callback()(main.main)
+    app.command()(show.show)
+    app.command()(ping.ping)
+    app()
 
 
 if __name__ == "__main__":
-    main()
+    app_main()

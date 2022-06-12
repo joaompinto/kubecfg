@@ -1,8 +1,12 @@
+from base64 import b64decode
 import os
+from tempfile import NamedTemporaryFile
 import yaml
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
+from metadict import MetaDict
+
 
 KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get("KUBECONFIG", "~/.kube/config")
 
@@ -15,6 +19,7 @@ class KubeConfig:
     def __init__(self):
         self.path = Path(KUBE_CONFIG_DEFAULT_LOCATION).expanduser()
         self.console = Console()
+        self.config = None
 
     def load_config(self):
 
@@ -31,7 +36,7 @@ class KubeConfig:
             raise ConfigException(
                 "Invalid kube-config. " "%s file is empty" % self.path
             )
-        self.config = config
+        self.config = MetaDict(config)
         return config
 
     def show_clusters(self):
@@ -62,9 +67,9 @@ class KubeConfig:
                 "Invalid kube-config. " "%s has no contexts defined" % self.path
             )
         for context in contexts:
-            cluster = context["context"].get("cluster")
-            namespace = context["context"].get("namespace")
-            user = context["context"].get("user")
+            cluster = context.context.get("cluster")
+            namespace = context.context.get("namespace")
+            user = context.context.get("user")
             table.add_row(context["name"], cluster, namespace, user)
         self.console.print(table)
 
@@ -90,4 +95,63 @@ class KubeConfig:
     def show_current(self):
         current = self.config.get("current-context")
         if current:
-            self.console.print(f"Current Context: [bold green]{current}[/]")
+            self.console.print(
+                f"Current Context: [bold green]{self.current_context}[/]"
+            )
+
+    @property
+    def contexts(self):
+        return self.config.contexts
+
+    @property
+    def clusters(self):
+        return self.config.clusters
+
+    @property
+    def users(self):
+        return self.config.users
+
+    @property
+    def current_context(self):
+        return self.config.get("current-context")
+
+    def get_generic(self, container: dict, name: str):
+        for item in container:
+            if item.name == name:
+                return item
+        raise KeyError(f"{name} not found", name)
+
+    def get_context(self, context_name: str) -> dict:
+        return self.get_generic(self.contexts, context_name)
+
+    def get_cluster(self, cluster_name: str) -> dict:
+        return self.get_generic(self.clusters, cluster_name)
+
+    def get_user(self, user_name: str) -> dict:
+        return self.get_generic(self.users, user_name)
+
+    def get_auth_data(self, context_name: str = None) -> tuple:
+        if context_name is None:
+            context_name = self.current_context
+        context = self.get_context(context_name)
+        cluster_info = self.get_cluster(context.context.cluster)
+        user_info = self.get_user(context.context.user)
+
+        def create_tmp_file(data):
+            if data:
+                tmp_file = NamedTemporaryFile(delete=False)
+                tmp_file.write(b64decode(data))
+                tmp_file.close()
+                return tmp_file.name
+
+        client_ca_data = cluster_info.cluster.get("certificate-authority-data")
+        client_key_data = user_info.user.get("client-key-data")
+        client_cert_data = user_info.user.get("client-certificate-data")
+        client_key_file = user_info.user.get("client-key")
+        client_cert_file = user_info.user.get("client-certificate")
+        client_ca_file = create_tmp_file(client_ca_data)
+        client_key_file = client_key_file or create_tmp_file(client_key_data)
+        client_cert_file = client_cert_file or create_tmp_file(client_cert_data)
+        cert = (client_cert_file, client_key_file)
+        server = cluster_info.cluster.server
+        return server, cert, client_ca_file

@@ -1,1 +1,4 @@
+httpx
+metadict
 rich
+typer
