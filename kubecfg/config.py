@@ -56,7 +56,7 @@ class KubeConfig:
 
     def show_contexts(self):
         table = Table(title="Contexts")
-        table.add_column("Name", style="cyan")
+        table.add_column("Name", style="cyan", no_wrap=True)
         table.add_column("Cluster")
         table.add_column("Namespace")
         table.add_column("User")
@@ -75,7 +75,7 @@ class KubeConfig:
 
     def show_users(self):
         table = Table(title="Users")
-        table.add_column("Name", style="cyan")
+        table.add_column("Name", style="cyan", no_wrap=True)
         table.add_column("Cert")
         table.add_column("Key")
 
@@ -85,8 +85,11 @@ class KubeConfig:
                 "Invalid kube-config. " "%s has no users defined" % self.path
             )
         for user in users:
-            cert = user["user"].get("client-certificate", " -- data --")
-            key = user["user"].get("client-key", " -- data -- ")
+            cert = user["user"].get("client-certificate", "-- data --")
+            key = user["user"].get("client-key", "-- data --")
+            if user.user.get("token"):
+                cert = "-- token --"
+                key = "-- token --"
             cert = cert.replace(str(Path.home()), "~")
             key = key.replace(str(Path.home()), "~")
             table.add_row(user["name"], cert, key)
@@ -135,7 +138,13 @@ class KubeConfig:
             context_name = self.current_context
         context = self.get_context(context_name)
         cluster_info = self.get_cluster(context.context.cluster)
+        server = cluster_info.cluster.server
         user_info = self.get_user(context.context.user)
+
+        # If token is found no need for certificates info
+        token = user_info.user.get("token")
+        if token:
+            return server, token
 
         def create_tmp_file(data):
             if data:
@@ -153,5 +162,4 @@ class KubeConfig:
         client_key_file = client_key_file or create_tmp_file(client_key_data)
         client_cert_file = client_cert_file or create_tmp_file(client_cert_data)
         cert = (client_cert_file, client_key_file)
-        server = cluster_info.cluster.server
         return server, cert, client_ca_file
