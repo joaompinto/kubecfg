@@ -1,13 +1,14 @@
 import typer
-from .cli import main, show, ping
+from .cli import curl, main, show, get
 
 
 def app_main():
     app = typer.Typer(short_help="Cool")
 
     app.callback()(main.main)
+    app.command()(curl.curl)
     app.command()(show.show)
-    app.command()(ping.ping)
+    app.command()(get.get)
     app()
 
 

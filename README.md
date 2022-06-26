@@ -11,7 +11,7 @@ Show configuration
 ![Features](https://github.com/joaompinto/kubecfg/raw/main/imgs/features.png)
 
 Test connectivity
-![Ping](https://github.com/joaompinto/kubecfg/raw/main/imgs/ping.png)
+![get](https://github.com/joaompinto/kubecfg/raw/main/imgs/get.png)
 
 # Install
 ```sh
