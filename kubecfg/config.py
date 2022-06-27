@@ -6,7 +6,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.table import Table
 from metadict import MetaDict
-
+from rich import print
 
 KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get("KUBECONFIG", "~/.kube/config")
 
@@ -95,12 +95,21 @@ class KubeConfig:
             table.add_row(user["name"], cert, key)
         self.console.print(table)
 
-    def show_current(self):
-        current = self.config.get("current-context")
-        if current:
+    def show_current(self, name_only: bool = True):
+        current_context = self.current_context
+        if current_context:
             self.console.print(
                 f"Current Context: [bold green]{self.current_context}[/]"
             )
+        else:
+            self.console.print(
+                "[bold yello]No current context found on your kubeconfig[/]"
+            )
+        if name_only or not current_context:
+            return
+        context = self.get_context(current_context).context
+        cluster = self.get_cluster(context.cluster).cluster
+        print(f"API URL: {cluster.server}")
 
     @property
     def contexts(self):

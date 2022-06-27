@@ -7,8 +7,8 @@ def app_main():
 
     app.callback()(main.main)
     app.command()(curl.curl)
-    app.command()(show.show)
     app.command()(get.get)
+    app.command()(show.show)
     app()
 
 

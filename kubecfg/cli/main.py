@@ -1,7 +1,13 @@
+import typer
+
 state = {"verbose": False}
 
 
-def main(verbose: bool = False):
+def main(
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Ignore SSL validation errors"
+    )
+):
     """
     Utility to show and test kubernetes client configurations
     """

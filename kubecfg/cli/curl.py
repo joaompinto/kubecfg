@@ -10,7 +10,7 @@ def curl(
     timeout: Optional[int] = 30,
     insecure: bool = typer.Option(False, "--insecure", "-k"),
 ):
-    """ Provide curl command to interact with the API server """
+    """Provide curl command to interact with the API server"""
     kubeconfig = KubeConfig()
     kubeconfig.load_config()
     if context_name is None:
