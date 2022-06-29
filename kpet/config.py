@@ -1,12 +1,16 @@
-from base64 import b64decode
 import os
-from tempfile import NamedTemporaryFile
-import yaml
+import sys
+from base64 import b64decode
 from pathlib import Path
-from rich.console import Console
-from rich.table import Table
+from tempfile import NamedTemporaryFile
+
+import yaml
 from metadict import MetaDict
 from rich import print
+from rich.console import Console
+from rich.table import Table
+
+from .log import log_verbose
 
 KUBE_CONFIG_DEFAULT_LOCATION = os.environ.get("KUBECONFIG", "~/.kube/config")
 
@@ -28,6 +32,7 @@ class KubeConfig:
             raise ConfigException(
                 "Kube config file not found at " "%s file is empty" % self.path
             )
+        log_verbose(f"Loading configuration from {path}")
 
         with open(path) as f:
             config = yaml.safe_load(f)
@@ -172,3 +177,23 @@ class KubeConfig:
         client_cert_file = client_cert_file or create_tmp_file(client_cert_data)
         cert = (client_cert_file, client_key_file)
         return server, cert, client_ca_file
+
+
+def get_context_auth_data(kubeconfig):
+    context_name = kubeconfig.current_context
+    if context_name is None:
+        print(
+            "[red]You have no current context, please provide a context name[/]",
+            file=sys.stderr,
+        )
+        exit(1)
+    try:
+        auth_data = kubeconfig.get_auth_data(context_name)
+    except KeyError:
+        print(f"Context '[bold red]{context_name}[/]' was not found!", file=sys.stderr)
+        available_contexts = ", ".join([k.name for k in kubeconfig.contexts])
+        print(
+            f"Available contexts: [bold cyan]{available_contexts}[/]", file=sys.stderr
+        )
+        return None
+    return auth_data

@@ -1,40 +1,56 @@
-# kubecfg
+# Kubernetes Python Exploration Tool
 
-Python library and cli utility to check k8s client configurations
+Command line tool to explore the Kubernetes API using Python expressions
 
-
-[![PyPi](https://img.shields.io/pypi/v/kubecfg.svg?style=flat-square)](https://pypi.python.org/pypi/kubecfg)
+[![PyPi](https://img.shields.io/pypi/v/kpet.svg?style=flat-square)](https://pypi.python.org/pypi/kpet)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
 
+# Motivation
 
-Show configuration
-![Features](https://github.com/joaompinto/kubecfg/raw/main/imgs/features.png)
+Explore the [Kubernetes API] by using «k8s tailored» REST client while supporting Python expressions for formatting and filterting data.
 
-Test connectivity
-![get](https://github.com/joaompinto/kubecfg/raw/main/imgs/get.png)
+[Kubernetes API]: https://kubernetes.io/docs/reference/kubernetes-api/
+
 
 # Install
 ```sh
-pip install kubecfg
+pip install kpet
 ```
 
-# Run
+# Usage examples
+
+Show the current kubernetes context configuration (detected from your KUBECONFIG file)
 ```sh
-kubecfg
+kpet show
 ```
 
-# Use the library
-This example shows how to use the [HTTPX](https://www.python-httpx.org/) to obtain the version of the API server.
+List all the API endpoints
+```sh
+kpet get
+```
 
-```python
-import httpx
-from kubecfg.config import KubeConfig
+Get the kubernetes API server version
+```sh
+kpet get version
+```
 
-k8s_config = KubeConfig()
-k8s_config.load_config()
 
-server, cert, client_ca = k8s_config.get_auth_data()
-r = httpx.get(f"{server}/version", cert=cert, verify=client_ca)
-r.raise_for_status()
-print(r.text)
+Get the list of nodes
+```sh
+kpet get api/v1/nodes
+```
+
+Get the PodIP for all pods, check the [special symbols](doc/symbols.md) for other symbols.
+```sh
+kpet get api/v1/pods -f "{name} is using IP {_s.podIP}"
+```
+
+Print the names of all running pods
+```sh
+kpet get api/v1/pods -f"{name}" -s "_s.phase=='Running'"
+```
+
+Print the names of all nodes which are Ready
+```sh
+kpet get api/v1/nodes -f"{name}" -s "[c for c in _s['conditions'] if c.type=='Ready' and c.status=='True']"
 ```

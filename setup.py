@@ -1,11 +1,12 @@
 import io
 from pathlib import Path
+
 from setuptools import setup
 
 SCRIPT_DIR = Path(__file__).parent
 
 
-scm_version_options = {"write_to": "kubecfg/version.py"}
+scm_version_options = {"write_to": "kpet/version.py"}
 
 
 def setup_package():

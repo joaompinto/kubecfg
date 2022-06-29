@@ -1,5 +1,9 @@
 import typer
-from .cli import curl, main, show, get
+
+from .cli import curl
+from .cli import get
+from .cli import main
+from .cli import show
 
 
 def app_main():

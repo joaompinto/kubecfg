@@ -1,9 +1,11 @@
-from kubecfg.config import KubeConfig
-
 import typer
 
+from kpet.config import KubeConfig
 
-def show(all: bool = typer.Option(False, "--all", "-a", help="Show all config"),):
+
+def show(
+    all: bool = typer.Option(False, "--all", "-a", help="Show all config"),
+):
     """show the kubeconfig [add -a to show all]"""
     kubeconfig = KubeConfig()
     kubeconfig.load_config()

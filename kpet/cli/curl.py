@@ -1,8 +1,10 @@
-import typer
-from kubecfg.config import KubeConfig
-from typing import Optional
-from rich import print
 import sys
+from typing import Optional
+
+import typer
+from rich import print
+
+from kpet.config import KubeConfig
 
 
 def curl(

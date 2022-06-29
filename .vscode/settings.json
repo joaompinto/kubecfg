@@ -6,7 +6,7 @@
         "build": true,
         "dist": true,
         ".pytest_cache": true,
-        "kubecfg/version.py": true
+        "kpet/version.py": true
     },
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,

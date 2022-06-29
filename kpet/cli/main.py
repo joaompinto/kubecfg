@@ -1,6 +1,7 @@
 import typer
+from metadict import MetaDict
 
-state = {"verbose": False}
+state = MetaDict({"verbose": False})
 
 
 def main(
